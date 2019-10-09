@@ -1,28 +1,65 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Header />
+    <AddUser v-on:add-user="addUser" />
+  <Users v-bind:users="users" v-on:delete-user="deleteUser" />
   </div>
-</template>
+</template> 
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import Users from './components/Users';
+import AddUser from './components/AddUser';
+import Header from './components/UI/Header';
+import  axios from 'axios';
 export default {
   name: 'app',
   components: {
-    HelloWorld
+   Users,
+   Header,
+   AddUser
+  },
+  data: function (){
+    return {
+      users: []
+    }
+  },
+  methods: {
+    deleteUser(id) {
+      this.users = this.users.filter(user => user.id !== id);
+        axios.delete(`https://jsonplaceholder.typicode.com/users/${id}`)
+      .then(res => this.users = this.users.filter(user => user.id !== id))
+      .catch(err => console.log(err))
+
+    },
+    addUser(newUser) {
+      const {username, marked} = newUser;
+      axios.post('https://jsonplaceholder.typicode.com/users', {
+        username,
+        marked
+      })
+      .then(res => this.users = [...this.users, res.data])
+      .catch(err => console.log(err))
+      this.users.push(newUser);
+    }
+  },
+  created() {
+    axios.get('https://jsonplaceholder.typicode.com/users?_limit=10')
+    .then(res => this.users = res.data)
+    .catch(err => console.log(err));
+
   }
 }
 </script>
 
 <style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: monospace;
+}
+
+.btn {
+  border:none;
 }
 </style>
